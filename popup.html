@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>لوحة التحكم</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+    button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+    input { padding: 5px; margin-top: 10px; width: 200px; }
+  </style>
+</head>
+<body>
+  <h2>التحكم في البوت 🚀</h2>
+
+  <button onclick="updateConfig('ON')">تشغيل ✅</button>
+  <button onclick="updateConfig('OFF')">إيقاف ⛔</button>
+
+  <div>
+    <h3>مدة الصلاحية</h3>
+    <input type="datetime-local" id="expiryInput" />
+    <button onclick="setExpiry()">تحديث المدة</button>
+  </div>
+
+  <p id="status"></p>
+
+  <script>
+    const repoOwner = "USERNAME"; // 👈 بدّلها ب username ديالك
+    const repoName = "bot-control"; // 👈 بدّلها باسم الريبو ديالك
+    const filePath = "config.json";
+    const githubToken = "YOUR_PERSONAL_ACCESS_TOKEN"; // ⚠️ بدّلها بالتوكن ديالك
+
+    async function updateConfig(statusValue) {
+      const expiry = new Date().toISOString(); // مبدئياً نخليه هو اليوم
+      const config = {
+        status: statusValue,
+        expiry: expiry,
+        token: "MY_SECRET_TOKEN_123"
+      };
+
+      await saveToGitHub(config);
+      document.getElementById("status").innerText = "تم التحديث ✔️";
+    }
+
+    async function setExpiry() {
+      const expiryValue = document.getElementById("expiryInput").value;
+      const config = {
+        status: "ON",
+        expiry: new Date(expiryValue).toISOString(),
+        token: "MY_SECRET_TOKEN_123"
+      };
+
+      await saveToGitHub(config);
+      document.getElementById("status").innerText = "تم تحديث مدة الصلاحية ✔️";
+    }
+
+    async function saveToGitHub(config) {
+      const url = https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath};
+
+      // نجيب آخر نسخة من الملف
+      const res = await fetch(url, { headers: { Authorization: token ${githubToken} } });
+      const file = await res.json();
+
+      // نحول config ل base64
+      const content = btoa(JSON.stringify(config, null, 2));
+
+      await fetch(url, {
+        method: "PUT",
+        headers: {
+          Authorization: token ${githubToken},
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Update config.json",
+          content: content,
+          sha: file.sha
+        })
+      });
+    }
+  </script>
+</body>
+</html>
